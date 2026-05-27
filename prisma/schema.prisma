@@ -1,0 +1,80 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String?       @unique
+  image         String?
+  applications  Application[]
+  createdAt     DateTime      @default(now())
+}
+
+model Application {
+  id                     String   @id @default(cuid())
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 1. General Information
+  country                String
+  universityName         String
+  universityAddress      String
+  worldRanking           Int?
+  countryRanking         Int?
+  courseName             String
+  courseWebsite          String?
+  durationMonths         Int?
+
+  // 2. Academic & Exam Requirements
+  gpaRequired            String?
+  gpaComments            String?
+  transcriptsRequired    Boolean  @default(false)
+  transcriptsComments    String?
+  resumeRequired         Boolean  @default(false)
+  resumeComments         String?
+  lettersOfRecCount      Int      @default(0)
+  lettersOfRecComments   String?
+  sopRequired            Boolean  @default(false)
+  sopComments            String?
+  ieltsRequired          Float?
+  grePreferred           Boolean  @default(false)
+  greComments            String?
+  
+  // 3. Experience & History
+  workExpPreferred       Boolean  @default(false)
+  workExpComments        String?
+  researchExpPreferred   Boolean  @default(false)
+  researchExpComments    String?
+  appliedBefore          Boolean  @default(false)
+  
+  // 4. Deadlines & Finances
+  openingDate            String?  // Storing as string to keep input form sync simple and robust
+  priorityDeadline       String?
+  finalDeadline          String?
+  appFeeOriginal         Float?
+  appFeeCurrency         String   @default("USD")
+  appFeeINR              Float?
+  tuitionFeeOriginal     Float?
+  tuitionFeeCurrency     String   @default("USD")
+  tuitionFeeINR          Float?
+
+  // 5. Interest & Status
+  interestRating         Int      @default(5) // 1 to 10
+  interestComments       String?
+  status                 String   @default("Preparing") // Preparing, Pending, Submitted, Accepted, Rejected, Shortlisted, Not Shortlisted
+
+  // 6. Extensibility
+  additionalFields       String   @default("{}") // JSON stringified map for dynamic attributes
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@unique([userId, universityName, courseName])
+}
